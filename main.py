@@ -83,18 +83,41 @@ def doFarmLoop(walkLength, punchCount):
         time.sleep(0.5)   
     
 
+def farmLoopConfirm(c1, c2):
+    clear()
+    confirm = input("Are you sure you would like to enable farm mode? [y/n] > ")
+    match confirm:
+        case "y":
+            doFarmLoop(c1, c2)
+        
+        case other:
+            return
+
 
 configFile = open('config.json')
 config = json.load(configFile)
 
 windowName("p0lybot - Idle")
+name = os.getlogin()
 
-print("p0lybot v1\n")
-print(f"Walk length: {config['walkKeystrokeLength']}\nPunch count: {config['punchCount']}\n")
-print("These values can be changed within the config.json file\nPress enter to start botting...")
+selected = False
+while selected == False:
+    clear()
+     
+    print("p0lybot v1\n")
+    mode = input(f"[1] - Farm mode \n[2] - BFG mode \n\n{name}@p0lybot > ")
 
-input()
-doFarmLoop(config['walkKeystrokeLength'], config['punchCount'])
+    match mode:
+        case "1":
+            farmLoopConfirm(config['walkKeystrokeLength'], config['punchCount'])
+            #doFarmLoop(config['walkKeystrokeLength'], config['punchCount'])
+
+        case "2":
+            print("Coming soon! ;)")
+            input() 
+
+        case other:
+            clear()
 
 
 
