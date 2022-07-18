@@ -26,7 +26,9 @@ macroActiveConsoleState = """
 
     https://github.com/plexislucky/p0lybot
     https://twitter.com/plexalwayslucky
-           """
+           """ # TODO: probably add some sort of config display to this, idk
+
+
 def windowEnumerationHandler(hwnd, top_windows):
     top_windows.append((hwnd, win32gui.GetWindowText(hwnd)))
 
@@ -36,10 +38,20 @@ def windowName(name): # lazy
 
 
 clear = lambda: os.system('cls') # lazy again
-
 user32 = ctypes.windll.user32
 
-def growtopiaWindowMove (x, y):
+def bfgScrollAdjust(): # im not sure why, but inputting values like 25 and -7 into pyautogui.scroll
+       i = 0           # just doesnt work and it behaves the same as 1 and -1, so this is a workaround
+       while i < 25:
+              pyautogui.scroll(1)
+              i += 1
+
+       j = 0
+       while j < 4:
+              pyautogui.scroll(-1)
+              j += 1
+
+def growtopiaWindowMove(x, y):
     hwnd = user32.FindWindowW(None, u'Growtopia')
     rect = ctypes.wintypes.RECT()
     user32.GetWindowRect(hwnd, ctypes.pointer(rect))
@@ -80,7 +92,7 @@ def doFarmLoop(walkLength, punchCount):
     while True:
         sendKey("space", 0, 3)
         sendKey("right", walkLength) # 0.04 with air robs
-        time.sleep(0.5)   
+        time.sleep(0.1)   
     
 
 def farmLoopConfirm(c1, c2):
@@ -93,6 +105,39 @@ def farmLoopConfirm(c1, c2):
         case other:
             return
 
+def doBfgLoop(punchCount):
+    clear()
+
+    windowName("p0lybot - Active")
+    print(macroActiveConsoleState)
+    growtopiaWindowActivate()
+
+    x, y = 0, 0
+    growtopiaWindowMove(x, y)
+
+    time.sleep(0.5)
+    pyautogui.moveTo(x+400, y+400)
+    bfgScrollAdjust()
+
+    while True:
+        pyautogui.moveTo(x+875, y+475) # 1st block coords: +875 +475
+        pyautogui.click()
+        pyautogui.moveTo(x+1075, y+475)
+        pyautogui.click()
+        sendKey("space", 0, punchCount*2)
+        time.sleep(0.1)
+
+
+def bfgLoopConfirm(c1):
+    clear()
+    print("WARNING: you must put your chat window all the way up for the macro to work, and you may not resize or move the Growtopia window!\n")
+    confirm = input("Are you sure you would like to enable BFG mode? [y/n] > ")
+    match confirm:
+        case "y":
+            doBfgLoop(c1)
+
+        case other: 
+            return
 
 configFile = open('config.json')
 config = json.load(configFile)
@@ -110,10 +155,9 @@ while selected == False:
     match mode:
         case "1":
             farmLoopConfirm(config['walkKeystrokeLength'], config['punchCount'])
-            #doFarmLoop(config['walkKeystrokeLength'], config['punchCount'])
 
         case "2":
-            print("Coming soon! ;)")
+            bfgLoopConfirm(config["punchCount"])
             input() 
 
         case other:
