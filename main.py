@@ -47,7 +47,7 @@ def bfgScrollAdjust(): # im not sure why, but inputting values like 25 and -7 in
               i += 1
 
        j = 0
-       while j < 4:
+       while j < 6:
               pyautogui.scroll(-1)
               j += 1
 
@@ -92,7 +92,6 @@ def doFarmLoop(walkLength, punchCount):
     while True:
         sendKey("space", 0, 3)
         sendKey("right", walkLength) # 0.04 with air robs
-        time.sleep(0.1)   
     
 
 def farmLoopConfirm(c1, c2):
@@ -154,10 +153,10 @@ while selected == False:
 
     match mode:
         case "1":
-            farmLoopConfirm(config['walkKeystrokeLength'], config['punchCount'])
+            farmLoopConfirm(config['farmMode']['walkKeystrokeLength'], config['farmMode']['punchCount'])
 
         case "2":
-            bfgLoopConfirm(config["punchCount"])
+            bfgLoopConfirm(config['bfgMode']['punchCount'])
             input() 
 
         case other:
