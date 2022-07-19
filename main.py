@@ -1,9 +1,11 @@
+from pypresence import Presence
 import ctypes, ctypes.wintypes
 import win32gui
 import pyautogui
 import time
 import os
 import json
+
 
 # TODO: add BFG mode (move mouse cursor between 2 points, also make it auto-set the zoom via scroll emulation)
 # TODO: add keylogger-esque method to register killswitch key when console window not active
@@ -36,9 +38,15 @@ def windowEnumerationHandler(hwnd, top_windows):
 def windowName(name): # lazy
     os.system(f"title {name}")
 
+configFile = open('config.json')
+config = json.load(configFile)
 
 clear = lambda: os.system('cls') # lazy again
 user32 = ctypes.windll.user32
+
+rpcid = config['rpc']
+rpc = Presence(rpcid)
+rpc.connect()
 
 def bfgScrollAdjust(): # im not sure why, but inputting values like 25 and -7 into pyautogui.scroll
        i = 0           # just doesnt work and it behaves the same as 1 and -1, so this is a workaround
@@ -83,11 +91,17 @@ def sendKey(key, length, repeat = 1):
 
 
 def doFarmLoop(walkLength, punchCount):
+    timeStarted = time.time()
+    rpc.update(state="Active [Mode: Farm]",large_image="rpcimage",start=timeStarted)
     clear()
+
     windowName("p0lybot - Active")
     print(macroActiveConsoleState)
     growtopiaWindowActivate()
-    growtopiaWindowMove(0, 0)
+
+    x,y = 0, 0
+    growtopiaWindowMove(x, y)
+
     time.sleep(0.5)
     while True:
         sendKey("space", 0, 3)
@@ -105,6 +119,8 @@ def farmLoopConfirm(c1, c2):
             return
 
 def doBfgLoop(punchCount):
+    timeStarted = time.time()
+    rpc.update(state="Active [Mode: BFG]",large_image="rpcimage",start=timeStarted)
     clear()
 
     windowName("p0lybot - Active")
@@ -138,10 +154,9 @@ def bfgLoopConfirm(c1):
         case other: 
             return
 
-configFile = open('config.json')
-config = json.load(configFile)
-
 windowName("p0lybot - Idle")
+rpc.update(state="Idle",large_image="rpcimage")
+
 name = os.getlogin()
 
 selected = False
