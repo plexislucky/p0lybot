@@ -1,6 +1,12 @@
 {
     "rpc": "998932411968651294",
 
+    "window":
+    {
+        "x": 0,
+        "y": 0
+    },
+    
     "farmMode": 
     {
         "walkKeystrokeLength": 0.03,
@@ -10,6 +16,6 @@
     "bfgMode":
     {
         "walkKeystrokeLength": 0.08,
-        "punchCount": 6  
+        "punchCount": 3  
     }
 }   

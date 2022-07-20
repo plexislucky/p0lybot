@@ -43,10 +43,23 @@ config = json.load(configFile)
 
 clear = lambda: os.system('cls') # lazy again
 user32 = ctypes.windll.user32
+x, y = config['window']['x'], config['window']['y']
 
 rpcid = config['rpc']
 rpc = Presence(rpcid)
 rpc.connect()
+
+def sendKey(key:str, length:float):
+    pyautogui.keyDown(key)
+    time.sleep(length)
+    pyautogui.keyUp(key)
+
+def placeModeScrollAdjust():
+    pyautogui.moveTo(x+400, y+400)
+    i = 0
+    while i < 25:
+        pyautogui.scroll(1)
+        i += 1
 
 def bfgScrollAdjust(): # im not sure why, but inputting values like 25 and -7 into pyautogui.scroll
        i = 0           # just doesnt work and it behaves the same as 1 and -1, so this is a workaround
@@ -59,7 +72,7 @@ def bfgScrollAdjust(): # im not sure why, but inputting values like 25 and -7 in
               pyautogui.scroll(-1)
               j += 1
 
-def growtopiaWindowMove(x, y):
+def windowMove():
     hwnd = user32.FindWindowW(None, u'Growtopia')
     rect = ctypes.wintypes.RECT()
     user32.GetWindowRect(hwnd, ctypes.pointer(rect))
@@ -69,7 +82,7 @@ def growtopiaWindowMove(x, y):
 
     user32.MoveWindow(hwnd, x, y, w ,h)
 
-def growtopiaWindowActivate(): # pasted function idc
+def windowActivate(): # pasted function idc
     results = []
     top_windows = []
     win32gui.EnumWindows(windowEnumerationHandler, top_windows)
@@ -81,15 +94,85 @@ def growtopiaWindowActivate(): # pasted function idc
             break
 
 
-def sendKey(key, length, repeat = 1):
+def respawn():
+    pyautogui.press('esc')
+    pyautogui.moveTo(x+600, y+300)
+    pyautogui.click()
+
+def takeBlocksFromRespawn(): # cant use sendKey here :(
+    pyautogui.keyDown('up')
+    pyautogui.keyDown('up') # hoping this fixes the void-input ffs
+    time.sleep(0.3)
+    pyautogui.keyDown('left')
+    time.sleep(0.01)
+    pyautogui.keyUp('left')
+    time.sleep(0.1)
+    pyautogui.keyUp('up')
+
+def placeLoop(third):
     i = 0
-    while i < repeat:
-        pyautogui.keyDown(key)
-        time.sleep(length)
-        pyautogui.keyUp(key)
-        i += 1 
+    while i < 3:
+        pyautogui.keyDown('right')
+        pyautogui.mouseDown()
+        time.sleep(third)
+        pyautogui.keyUp('right')
+        pyautogui.mouseUp()
+        i += 1
+
+def afterCollectAbove(plat:int): # plat = how many jumps from plat above ghost charm
 
 
+    i = 25  #25
+    while i > 0: 
+        pyautogui.moveTo(x+600, x+500)   
+
+        sendKey('right', 0.1)
+        sendKey('up', 0.05)
+
+        j = 0
+        while j < i:
+            sendKey('up', 0.08) # 0.08 min for next plat prolly
+            time.sleep(0.1)
+            j += 1
+
+        placeLoop(4.4)
+
+        respawn()
+        time.sleep(4)
+        takeBlocksFromRespawn()
+        time.sleep(0.5)
+        i -= 1
+        
+def doPlaceLoop():
+    windowActivate()
+    windowMove()
+
+    placeModeScrollAdjust()
+
+    respawn()
+    time.sleep(3)
+    takeBlocksFromRespawn()
+    time.sleep(0.25)
+    afterCollectAbove(1)
+    sendKey('right', 0.52)
+    sendKey('up', 0.2)
+    placeLoop(4.33)
+    time.sleep(0.2)
+    placeLoop(4.1)
+
+    time.sleep(1)
+    respawn()
+    exit()
+
+def placeLoopConfirm():
+    clear()
+    confirm = input("Are you sure you would like to enable place mode? [y/n] > ")
+    match confirm:
+        case "y":
+            doPlaceLoop()
+        
+        case other:
+            return
 def doFarmLoop(walkLength, punchCount):
     timeStarted = time.time()
     rpc.update(state="Active [Mode: Farm]",large_image="rpcimage",start=timeStarted)
@@ -97,15 +180,21 @@ def doFarmLoop(walkLength, punchCount):
 
     windowName("p0lybot - Active")
     print(macroActiveConsoleState)
-    growtopiaWindowActivate()
+    windowActivate()
 
-    x,y = 0, 0
-    growtopiaWindowMove(x, y)
+    windowMove()
 
     time.sleep(0.5)
     while True:
-        sendKey("space", 0, 3)
-        sendKey("right", walkLength) # 0.04 with air robs
+        i = 0
+        while i < 3:
+            pyautogui.keyDown('space')
+            pyautogui.keyUp('space')
+            i += 1
+
+        pyautogui.keyDown('right')
+        time.sleep(walkLength)
+        pyautogui.keyUp('right')
     
 
 def farmLoopConfirm(c1, c2):
@@ -125,10 +214,9 @@ def doBfgLoop(punchCount):
 
     windowName("p0lybot - Active")
     print(macroActiveConsoleState)
-    growtopiaWindowActivate()
+    windowActivate()
 
-    x, y = 0, 0
-    growtopiaWindowMove(x, y)
+    windowMove()
 
     time.sleep(0.5)
     pyautogui.moveTo(x+400, y+400)
@@ -139,7 +227,13 @@ def doBfgLoop(punchCount):
         pyautogui.click()
         pyautogui.moveTo(x+1075, y+475)
         pyautogui.click()
-        sendKey("space", 0, punchCount*2)
+
+        i = 0
+        while i < punchCount*2:          # have to do this cuz pyautogui.press doesnt register
+            pyautogui.keyDown('space')   # the punch, growtopia issue prob
+            pyautogui.keyUp('space')
+            i += 1
+
         time.sleep(0.1)
 
 
@@ -164,7 +258,7 @@ while selected == False:
     clear()
      
     print("p0lybot v1\n")
-    mode = input(f"[1] - Farm mode \n[2] - BFG mode \n\n{name}@p0lybot > ")
+    mode = input(f"[1] - Farm mode \n[2] - BFG mode \n[3] - Place mode \n\n{name}@p0lybot > ")
 
     match mode:
         case "1":
@@ -172,7 +266,9 @@ while selected == False:
 
         case "2":
             bfgLoopConfirm(config['bfgMode']['punchCount'])
-            input() 
+
+        case "3":
+            placeLoopConfirm()
 
         case other:
             clear()
